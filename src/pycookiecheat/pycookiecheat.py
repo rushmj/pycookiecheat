@@ -228,6 +228,7 @@ def chrome_cookies(
                 val = chrome_decrypt(enc_val, key=enc_key,
                                      init_vector=config['init_vector'])
             if path:
+                # specify domain's path of the JSESSIONID
                 if not (cookie_key=="JSESSIONID" and path_!=path):
                     cookies[cookie_key] = val
             if curl_cookie_file:
