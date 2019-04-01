@@ -151,6 +151,7 @@ def chrome_cookies(
         url: str,
         cookie_file: str = None,
         browser: str = "Chrome",
+        path: str = None,
         curl_cookie_file: str = None,
         ) -> dict:
     """Retrieve cookies from Chrome/Chromium on OSX or Linux.
@@ -217,7 +218,7 @@ def chrome_cookies(
     curl_cookies = []
 
     for host_key in generate_host_keys(domain):
-        for hk, path, is_secure, expires_utc, cookie_key, val, enc_val \
+        for hk, path_, is_secure, expires_utc, cookie_key, val, enc_val \
                 in conn.execute(sql, (host_key,)):
             # if there is a not encrypted value or if the encrypted value
             # doesn't start with the 'v1[01]' prefix, return v
@@ -226,11 +227,13 @@ def chrome_cookies(
             else:
                 val = chrome_decrypt(enc_val, key=enc_key,
                                      init_vector=config['init_vector'])
-            cookies[cookie_key] = val
+            if path:
+                if not (cookie_key=="JSESSIONID" and path_!=path):
+                    cookies[cookie_key] = val
             if curl_cookie_file:
                 # http://www.cookiecentral.com/faq/#3.5
                 curl_cookies.append('\t'.join(
-                    [hk, 'TRUE', path, 'TRUE' if is_secure else 'FALSE',
+                    [hk, 'TRUE', path_, 'TRUE' if is_secure else 'FALSE',
                      str(expires_utc), cookie_key, val]
                 ))
 
